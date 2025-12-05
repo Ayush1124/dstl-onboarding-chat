@@ -6,6 +6,7 @@ import openai
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 
 from .database import create_db_and_tables, get_session, seed_db
@@ -22,11 +23,20 @@ async def lifespan(app: FastAPI):
 # Load environment variables (NRP API key) if present
 load_dotenv()
 API_KEY = os.getenv("NRP_API_KEY")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 if openai is not None and API_KEY:
     openai.api_key = API_KEY
 
 
 app = FastAPI(lifespan=lifespan)
+
+# In production, serve the built frontend from the `static` folder at /app
+if ENVIRONMENT.lower() == "production":
+    # static folder is expected next to this module at `src/backend/static`
+    static_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "static")
+    )
+    app.mount("/app", StaticFiles(directory=static_dir, html=True), name="static")
 
 
 app.add_middleware(
