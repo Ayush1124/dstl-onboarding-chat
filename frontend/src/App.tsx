@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Message = {
   id?: number;
@@ -180,7 +182,9 @@ function App() {
                     : "bg-white border border-gray-200 text-gray-800"
                 }`}
               >
-                {msg.content}
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {msg.content}
+                </ReactMarkdown>
               </div>
             </div>
           ))}
