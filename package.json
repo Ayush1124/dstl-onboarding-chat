@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "dotenv": "^17.2.3",
-    "make": "^0.8.1",
-    "openai": "^6.9.1",
-    "python-dotenv": "^0.0.1-security"
-  }
-}
