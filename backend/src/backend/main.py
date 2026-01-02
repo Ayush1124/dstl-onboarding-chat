@@ -120,13 +120,11 @@ def create_message(
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    # Ensure the user message is linked to the conversation and persist it
     message.conversation_id = conversation_id
     session.add(message)
     session.commit()
     session.refresh(message)
 
-    # Build conversation history for the LLM
     history = session.exec(
         select(Message).where(Message.conversation_id == conversation_id).order_by(Message.created_at)
     ).all()
@@ -138,18 +136,14 @@ def create_message(
 
     assistant_msg = None
 
-    # Call the OpenAI / NRP LLM using the new OpenAI client (openai>=1.0).
     if openai is not None and API_KEY:
         try:
             model_name = "gemma3"
 
-            # Create a client using the provided API key
             client = openai.OpenAI(api_key=API_KEY, base_url="https://ellm.nrp-nautilus.io/v1")
 
-            # The new client uses `client.chat.completions.create` to make chat completions
             resp = client.chat.completions.create(model=model_name, messages=llm_messages)
 
-            # Extract assistant text from the response
             try:
                 assistant_text = resp.choices[0].message.content
             except Exception:
@@ -162,7 +156,6 @@ def create_message(
     else:
         assistant_text = "[LLM not configured]"
 
-    # Persist assistant response
     assistant_msg = Message(conversation_id=conversation_id, role="assistant", content=assistant_text)
     session.add(assistant_msg)
     session.commit()
